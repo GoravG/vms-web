@@ -1,14 +1,14 @@
 import Head from "next/head";
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 import { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Toaster } from "@/components/ui/sonner"
+import { Separator } from "@/components/ui/separator";
+import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Wifi, WifiOff, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,9 +47,7 @@ export default function Home() {
       ws.onopen = () => {
         console.log('ws open');
         if (mounted) {
-          toast("Connected", {
-            description: "Successfully connected to server",
-          })
+          toast.success("Connected to server");
           setConnectionPhase(CONNECTION_PHASES.CONNECTED);
         }
       };
@@ -64,6 +62,7 @@ export default function Home() {
       ws.onerror = (err) => {
         console.error('ws error', err);
         if (mounted) {
+          toast.error("Connection error");
           setConnectionPhase(CONNECTION_PHASES.ERROR);
         }
       };
@@ -72,6 +71,7 @@ export default function Home() {
         console.log('ws closed', ev.code, ev.reason);
         if (!mounted) return;
         setConnectionPhase(CONNECTION_PHASES.DISCONNECTED);
+        toast.warning("Disconnected, reconnecting...");
         reconnectRef.current = setTimeout(() => connect(), 2000);
       };
     }
@@ -96,11 +96,11 @@ export default function Home() {
 
     let cancelled = false;
     QRCode.toDataURL(message, {
-      width: 280,
-      margin: 2,
+      width: 256,
+      margin: 1,
       color: {
-        dark: '#000000',
-        light: '#FFFFFF'
+        dark: '#09090b',
+        light: '#ffffff'
       }
     })
       .then((url) => { if (!cancelled) setQrUrl(url); })
@@ -113,132 +113,136 @@ export default function Home() {
     switch (connectionPhase) {
       case CONNECTION_PHASES.RECEIVING:
         return {
-          color: 'bg-emerald-500',
-          animation: 'animate-pulse',
-          variant: 'default'
+          variant: 'default',
+          icon: CheckCircle2,
+          label: 'Active',
+          className: 'bg-emerald-50 text-emerald-700 border-emerald-200'
         };
       case CONNECTION_PHASES.CONNECTED:
         return {
-          color: 'bg-blue-500',
-          animation: '',
-          variant: 'secondary'
+          variant: 'secondary',
+          icon: Wifi,
+          label: 'Connected',
+          className: 'bg-blue-50 text-blue-700 border-blue-200'
         };
       case CONNECTION_PHASES.CONNECTING:
         return {
-          color: 'bg-amber-500',
-          animation: 'animate-pulse',
           variant: 'outline',
+          icon: Loader2,
+          label: 'Connecting',
+          className: 'bg-amber-50 text-amber-700 border-amber-200'
         };
       case CONNECTION_PHASES.ERROR:
         return {
-          color: 'bg-red-500',
-          animation: '',
           variant: 'destructive',
-          text: 'Error'
+          icon: AlertCircle,
+          label: 'Error',
+          className: 'bg-red-50 text-red-700 border-red-200'
         };
       default:
         return {
-          color: 'bg-gray-400',
-          animation: '',
-          variant: 'outline'
+          variant: 'outline',
+          icon: WifiOff,
+          label: 'Disconnected',
+          className: 'bg-gray-50 text-gray-600 border-gray-200'
         };
     }
   };
 
   const status = getStatusConfig();
+  const StatusIcon = status.icon;
 
   return (
     <>
       <Head>
-        <title>VMS-QR</title>
+        <title>QR Live</title>
         <meta name="description" content="Live QR Code Generator" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Animated background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"></div>
-        <div className="absolute inset-0 bg-grid-slate-200/50 dark:bg-grid-slate-700/25 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-      </div>
+      <main className={`min-h-screen bg-gray-50/30 ${geistSans.variable} ${geistMono.variable} font-sans flex flex-col items-center justify-center p-6`}>
+        <div className="w-full max-w-md mx-auto space-y-6">
+          {/* Header */}
+          <div className="text-center">
+          </div>
 
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 relative">
-        {/* Floating orbs for visual interest */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-
-        <div className="w-full max-w-lg mx-auto relative z-10">
-          <Card className="border-0 shadow-2xl shadow-slate-900/10 dark:shadow-slate-900/50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80">
-            <CardHeader className="text-center pb-6">
-              <div className="flex items-center justify-center mb-4">
-                <div className="relative">
-                  <div className={`w-4 h-4 rounded-full ${status.color} ${status.animation} transition-all duration-500`}></div>
-                  <div className={`absolute inset-0 w-4 h-4 rounded-full ${status.color} opacity-25 animate-ping`}></div>
+          <div className="w-full">
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-sm">
+              <CardHeader className="pb-4 px-8 pt-8">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-medium">QR Code</CardTitle>
+                  <Badge className={status.className} variant={status.variant}>
+                    <StatusIcon
+                      className={`w-3 h-3 mr-1.5 ${connectionPhase === CONNECTION_PHASES.CONNECTING ? 'animate-spin' : ''
+                        }`}
+                    />
+                    {status.label}
+                  </Badge>
                 </div>
-              </div>
-            </CardHeader>
+              </CardHeader>
 
-            <CardContent className="px-8">
-              {/* QR Code Display */}
-              <div className="flex justify-center mb-8">
-                {qrUrl ? (
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition-all duration-300"></div>
-                    <div className="relative p-4 bg-white rounded-2xl shadow-lg">
+              <CardContent className="space-y-6 px-8 pb-8">
+                {/* QR Code Display */}
+                <div className="flex justify-center">
+                  {qrUrl ? (
+                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                       <Image
                         src={qrUrl}
                         alt="QR Code"
-                        width={280}
-                        height={280}
-                        className="rounded-xl"
+                        width={256}
+                        height={256}
                         priority
+                        className="rounded-lg"
                       />
                     </div>
-                  </div>
-                ) : (
-                  <div className="w-[312px] h-[312px] flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50">
-                    <div className="text-center space-y-4">
-                      {connectionPhase === CONNECTION_PHASES.CONNECTING ? (
-                        <>
-                          <div className="relative mx-auto w-12 h-12">
-                            <div className="absolute inset-0 w-12 h-12 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
-                            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-blue-500 rounded-full animate-spin"></div>
-                          </div>
-                          <p className="text-slate-500 dark:text-slate-400 font-medium">Connecting</p>
-                        </>
-                      ) : (
-                        <>
-                          <Skeleton className="h-12 w-12 rounded-full" />
-                          <p className="text-slate-500 dark:text-slate-400 font-medium">Waiting for data</p>
-                        </>
-                      )}
+                  ) : (
+                    <div className="w-[280px] h-[280px] flex items-center justify-center bg-gray-50 rounded-xl border-2 border-gray-200 border-dashed">
+                      <div className="text-center space-y-3">
+                        <div className="w-12 h-12 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+                          <StatusIcon className={`w-6 h-6 text-gray-500 ${connectionPhase === CONNECTION_PHASES.CONNECTING ? 'animate-spin' : ''
+                            }`} />
+                        </div>
+                        <p className="text-sm text-gray-500 font-medium">
+                          {connectionPhase === CONNECTION_PHASES.CONNECTING
+                            ? 'Connecting...'
+                            : 'Waiting for data'
+                          }
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Message Display */}
-              {message && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent"></div>
-                    {/* <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Message</span> */}
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent"></div>
-                  </div>
-                  <div className="relative">
-                    <pre className="text-sm bg-slate-100/80 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono overflow-x-auto whitespace-pre-wrap break-all text-slate-700 dark:text-slate-300">
-                      {message}
-                    </pre>
-                  </div>
+                  )}
                 </div>
-              )}
-            </CardContent>
 
-            <CardFooter className="text-center pt-6 border-t border-slate-100 dark:border-slate-800">
-            </CardFooter>
-          </Card>
+                {/* Message Display */}
+                {message && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-medium text-gray-900">Raw Data</h3>
+                      <div className="bg-gray-50 rounded-lg p-4 border">
+                        <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap break-all leading-relaxed">
+                          {message}
+                        </pre>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-        <Toaster />
+
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+            }
+          }}
+        />
       </main>
     </>
   );
