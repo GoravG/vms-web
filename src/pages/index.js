@@ -3,12 +3,14 @@ import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
 import { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Wifi, WifiOff, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Wifi, WifiOff, Loader2, CheckCircle2, AlertCircle, Loader } from "lucide-react";
+
+const baseURI = process.env.NEXT_PUBLIC_BASE_URL
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,7 +74,7 @@ export default function Home() {
         if (!mounted) return;
         setConnectionPhase(CONNECTION_PHASES.DISCONNECTED);
         toast.warning("Disconnected, reconnecting...");
-        reconnectRef.current = setTimeout(() => connect(), 2000);
+        reconnectRef.current = setTimeout(() => connect(), 5000);
       };
     }
 
@@ -95,7 +97,7 @@ export default function Home() {
     }
 
     let cancelled = false;
-    QRCode.toDataURL(message, {
+    QRCode.toDataURL(baseURI + "/checkin?token=" + message, {
       width: 256,
       margin: 1,
       color: {
@@ -142,7 +144,7 @@ export default function Home() {
       default:
         return {
           variant: 'outline',
-          icon: WifiOff,
+          icon: Loader2,
           label: 'Disconnected',
           className: 'bg-gray-50 text-gray-600 border-gray-200'
         };
@@ -163,26 +165,23 @@ export default function Home() {
 
       <main className={`min-h-screen bg-gray-50/30 ${geistSans.variable} ${geistMono.variable} font-sans flex flex-col items-center justify-center p-6`}>
         <div className="w-full max-w-md mx-auto space-y-6">
-          {/* Header */}
-          <div className="text-center">
-          </div>
 
           <div className="w-full">
             <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-sm">
               <CardHeader className="pb-4 px-8 pt-8">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-medium">QR Code</CardTitle>
-                  <Badge className={status.className} variant={status.variant}>
+                  {/* <CardTitle className="text-lg font-medium">QR Code</CardTitle> */}
+                  &nbsp;<Badge className={status.className} variant={status.variant}>
                     <StatusIcon
                       className={`w-3 h-3 mr-1.5 ${connectionPhase === CONNECTION_PHASES.CONNECTING ? 'animate-spin' : ''
                         }`}
                     />
-                    {status.label}
+                    &nbsp;{status.label} &nbsp;
                   </Badge>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-6 px-8 pb-8">
+              <CardContent style={{ paddingBottom: 70 }}>
                 {/* QR Code Display */}
                 <div className="flex justify-center">
                   {qrUrl ? (
@@ -197,37 +196,24 @@ export default function Home() {
                       />
                     </div>
                   ) : (
-                    <div className="w-[280px] h-[280px] flex items-center justify-center bg-gray-50 rounded-xl border-2 border-gray-200 border-dashed">
-                      <div className="text-center space-y-3">
-                        <div className="w-12 h-12 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
-                          <StatusIcon className={`w-6 h-6 text-gray-500 ${connectionPhase === CONNECTION_PHASES.CONNECTING ? 'animate-spin' : ''
-                            }`} />
-                        </div>
-                        <p className="text-sm text-gray-500 font-medium">
-                          {connectionPhase === CONNECTION_PHASES.CONNECTING
-                            ? 'Connecting...'
-                            : 'Waiting for data'
-                          }
-                        </p>
+                    <div className="w-[280px] h-[280px] flex flex-col items-center justify-center bg-gray-50 rounded-xl border-2 border-gray-200 border-dashed">
+                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <StatusIcon
+                          className={`w-6 h-6 text-gray-500 ${connectionPhase === CONNECTION_PHASES.CONNECTING ||
+                            connectionPhase === CONNECTION_PHASES.DISCONNECTED
+                            ? 'animate-spin'
+                            : ''
+                            }`}
+                        />
                       </div>
+                      <p className="mt-3 text-sm text-gray-500 font-medium">
+                        {connectionPhase === CONNECTION_PHASES.CONNECTING
+                          ? 'Connecting...'
+                          : 'Waiting for data'}
+                      </p>
                     </div>
                   )}
                 </div>
-
-                {/* Message Display */}
-                {message && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-gray-900">Raw Data</h3>
-                      <div className="bg-gray-50 rounded-lg p-4 border">
-                        <pre className="text-xs font-mono text-gray-700 whitespace-pre-wrap break-all leading-relaxed">
-                          {message}
-                        </pre>
-                      </div>
-                    </div>
-                  </>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -243,7 +229,7 @@ export default function Home() {
             }
           }}
         />
-      </main>
+      </main >
     </>
   );
 }
