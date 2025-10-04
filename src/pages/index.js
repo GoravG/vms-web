@@ -95,8 +95,10 @@ export default function Home() {
       setQrUrl('');
       return;
     }
+    console.log(baseURI + "/checkin?token=" + message)
 
     let cancelled = false;
+
     QRCode.toDataURL(baseURI + "/checkin?token=" + message, {
       width: 256,
       margin: 1,
