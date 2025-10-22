@@ -43,12 +43,10 @@ export default function Home() {
     function connect() {
       setConnectionPhase(CONNECTION_PHASES.CONNECTING);
       const wsURL = `ws://${baseURL}/ws`
-      console.log(wsURL)
       const ws = new WebSocket(wsURL);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('ws open');
         if (mounted) {
           toast.success("Connected to server");
           setConnectionPhase(CONNECTION_PHASES.CONNECTED);
@@ -96,7 +94,6 @@ export default function Home() {
       setQrUrl('');
       return;
     }
-    console.log(message)
 
     let cancelled = false;
 

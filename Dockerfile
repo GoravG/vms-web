@@ -25,14 +25,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy necessary files from builder
-COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/standalone/. ./
 COPY --from=builder /app/.next/static ./.next/static
-
-# Install only production dependencies
-RUN npm ci --only=production
 
 # Expose the port the app runs on
 EXPOSE 3000
