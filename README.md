@@ -1,26 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# VMS Web Frontend
 
-## Getting Started
+A Next.js-based frontend application that connects to a WebSocket backend for real-time updates. This project was bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
 
-First, run the development server:
+## Features
 
+- Real-time WebSocket connection
+- QR Code generation
+- Connection status indicators
+- Automatic reconnection on disconnect
+- Docker support
+
+## Prerequisites
+
+- Node.js 18 or higher
+- npm or yarn
+- Docker (optional)
+
+## Development Setup
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create a `.env.local` file in the root directory:
+```
+NEXT_PUBLIC_BASE_URL=localhost:8080
+```
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Docker Deployment
+
+### Using Docker
+
+1. Build the Docker image:
+```bash
+docker build -t vms-web .
+```
+
+2. Run the container:
+```bash
+docker run -p 3000:3000 -e NEXT_PUBLIC_BASE_URL=your-backend-url vms-web
+```
+
+### Environment Variables
+
+- `NEXT_PUBLIC_BASE_URL`: WebSocket backend server URL (e.g., `localhost:8080`)
+
+You can override environment variables in Docker using:
+- Direct in docker-compose.yml
+- Using .env file with variable substitution
+- Using env_file directive
+- Command line: `BACKEND_URL=production-server:8080 docker-compose up`
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
