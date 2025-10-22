@@ -5,12 +5,9 @@ import { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Wifi, WifiOff, Loader2, CheckCircle2, AlertCircle, Loader } from "lucide-react";
-
-const baseURI = process.env.NEXT_PUBLIC_BASE_URL
+import { Wifi, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +38,13 @@ export default function Home() {
   useEffect(() => {
     let mounted = true;
 
+    const baseURL = process.env.NEXT_PUBLIC_BASE_URL
+
     function connect() {
       setConnectionPhase(CONNECTION_PHASES.CONNECTING);
-      const ws = new WebSocket('ws://localhost:8080/ws');
+      const wsURL = `ws://${baseURL}/ws`
+      console.log(wsURL)
+      const ws = new WebSocket(wsURL);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -95,11 +96,11 @@ export default function Home() {
       setQrUrl('');
       return;
     }
-    console.log(baseURI + "/checkin?token=" + message)
+    console.log(message)
 
     let cancelled = false;
 
-    QRCode.toDataURL(baseURI + "/checkin?token=" + message, {
+    QRCode.toDataURL(message, {
       width: 256,
       margin: 1,
       color: {
